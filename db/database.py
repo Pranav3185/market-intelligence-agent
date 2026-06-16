@@ -22,7 +22,9 @@ def get_engine():
 def init_db():
     """Run schema.sql to create tables if they don't exist."""
     engine = get_engine()
-    schema_path = os.path.join(os.path.dirname(__file__), "schema.sql")
+    
+    # Use absolute path relative to this file's location
+    schema_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.sql")
 
     with open(schema_path, "r") as f:
         schema_sql = f.read()
@@ -30,7 +32,7 @@ def init_db():
     with engine.connect() as conn:
         conn.execute(text(schema_sql))
         conn.commit()
+
 if __name__ == "__main__":
     init_db()
-    
     print("Database initialized successfully.")
