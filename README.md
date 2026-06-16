@@ -19,40 +19,33 @@ This project was built to demonstrate production-style data engineering and GenA
 ## 🏗️ Architecture
 
 
-             NewsAPI
-                │
-                ▼
-┌─────────────────────────────────────┐
-│         ETL Pipeline                │
-│  Fetch → Clean → Deduplicate        │
-└────────────────┬────────────────────┘
-                 │
-        ┌────────┴────────┐
-        ▼                 ▼
-  PostgreSQL           ChromaDB
-  (structured)         (vectors)
-        │                 │
-        ▼                 ▼
-┌───────────────────────────────────┐
-│     Analytics Layer               │
-│  Sentiment (DistilBERT) + NLP     │
-└───────────────┬───────────────────┘
-                │
-                ▼
-┌───────────────────────────────────┐
-│     AI Agent (LangChain ReAct)    │
-│  Tools: SQL + RAG + Trends        │
-└───────────────┬───────────────────┘
-                │
-                ▼
-┌───────────────────────────────────┐
-│     Streamlit Dashboard           │
-│  Charts + Chat + Pipeline Status  │
-└───────────────────────────────────┘
-                │
-                ▼
-        APScheduler (every 6hrs)
-   runs full pipeline automatically
+```
+NewsAPI
+    │
+    ▼
+ETL Pipeline (Fetch → Clean → Deduplicate)
+    │
+    ├──────────────────┐
+    ▼                  ▼
+PostgreSQL          ChromaDB
+(structured)        (vectors)
+    │                  │
+    └──────┬───────────┘
+           ▼
+Analytics Layer
+(Sentiment · NER · Trends)
+           │
+           ▼
+AI Agent — LangChain ReAct
+(SQL + RAG + Trends tools)
+           │
+           ▼
+Streamlit Dashboard
+(Charts · Chat · Pipeline Status)
+           │
+           ▼
+APScheduler → runs every 6 hours automatically
+```
 
 
 ## 🛠️ Tech Stack
@@ -60,7 +53,7 @@ This project was built to demonstrate production-style data engineering and GenA
 | Layer | Technology |
 |-------|------------|
 | Data Ingestion | NewsAPI + Requests |
-| Storage | PostgreSQL + SQLAlchemy |
+| Storage | Supabase (cloud PostgreSQL) + SQLAlchemy |
 | Vector Store | ChromaDB |
 | Embeddings | HuggingFace `all-MiniLM-L6-v2` |
 | Sentiment Analysis | HuggingFace DistilBERT |
@@ -121,7 +114,7 @@ A `.gitignore` is included to exclude all of the above automatically.
 
 ### Prerequisites
 - Python 3.11+
-- PostgreSQL installed and running
+- Supabase account (free at supabase.com)
 - NewsAPI key (free at [newsapi.org](https://newsapi.org))
 - Groq API key (free at [console.groq.com](https://console.groq.com))
 
@@ -162,12 +155,13 @@ DB_PASSWORD=your_postgres_password
 
 ### 5. Create the PostgreSQL database
 
-Open pgAdmin or psql and run:
-```sql
-CREATE DATABASE market_intelligence;
 ```
+Create a free project at supabase.com. Copy the connection string 
+from Settings → Database and add it to your .env file.
+Tables are created automatically when you run python main.py.
 
 ### 6. Run the pipeline
+```
 
 ```bash
 python main.py
@@ -249,5 +243,5 @@ DistilBERT is fast, runs locally, requires no API calls, and is accurate enough 
 ## 👤 Author
 
 **Pranav  Pratosh Sharma**
-Data Analyst → Data Scientist
+Data Analyst building expertise in Data Science, GenAI & ML Engineering
 [LinkedIn](https://www.linkedin.com/in/pranav-sharma31) | [GitHub](https://github.com/Pranav3185)
