@@ -20,7 +20,7 @@ This project was built to demonstrate production-style data engineering and GenA
 
 
 ```
-NewsAPI
+  NewsAPI
     │
     ▼
 ETL Pipeline (Fetch → Clean → Deduplicate)
