@@ -3,99 +3,86 @@ import chromadb
 from groq import Groq
 import os
 from dotenv import load_dotenv
-import os
 
-print("rag.py loaded")
-print("RUNNING FILE:", os.path.abspath(__file__))
-
-print("Starting RAG...")
-
-# Load environment variables
 load_dotenv()
 
-# Check API key
-groq_key = os.getenv("GROQ_API_KEY")
-
-if not groq_key:
-    raise ValueError(
-        "GROQ_API_KEY not found. Check your .env file."
-    )
-
-print("Loading embedding model...")
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-print("Embedding model loaded.")
-
-print("MODEL BEING USED:", "llama-3.1-8b-instant")
-print("Creating Groq client...")
-
-groq_client = Groq(api_key=groq_key)
-print("Groq client created.")
-
-print("Connecting to ChromaDB...")
-chroma_client = chromadb.PersistentClient(path="./chroma_db")
-
-collection = chroma_client.get_or_create_collection(
-    name="market_intelligence",
-    metadata={"hnsw:space": "cosine"}
-)
-
-print(f"Connected. Articles in ChromaDB: {collection.count()}")
+# ── Lazy globals ───────────────────────────────────────────────────────────────
+_embedding_model = None
+_groq_client = None
+_collection = None
 
 
+def get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        print("Loading embedding model...")
+        _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+        print("Embedding model loaded.")
+    return _embedding_model
+
+
+def get_groq_client():
+    global _groq_client
+    if _groq_client is None:
+        groq_key = os.getenv("GROQ_API_KEY")
+        if not groq_key:
+            raise ValueError("GROQ_API_KEY not found. Check your .env file.")
+        _groq_client = Groq(api_key=groq_key)
+    return _groq_client
+
+
+def get_collection():
+    global _collection
+    if _collection is None:
+        chroma_client = chromadb.PersistentClient(path="./chroma_db")
+        _collection = chroma_client.get_or_create_collection(
+            name="market_intelligence",
+            metadata={"hnsw:space": "cosine"}
+        )
+        print(f"Connected. Articles in ChromaDB: {_collection.count()}")
+    return _collection
+
+
+# ── Core functions ─────────────────────────────────────────────────────────────
 def retrieve_context(query: str, n_results: int = 10):
     """Retrieve most relevant articles."""
+    query_embedding = get_embedding_model().encode(query).tolist()
 
-    print("Generating query embedding...")
-    query_embedding = embedding_model.encode(query).tolist()
-
-    print("Searching ChromaDB...")
-    results = collection.query(
+    results = get_collection().query(
         query_embeddings=[query_embedding],
         n_results=n_results,
         include=["documents", "metadatas", "distances"]
     )
 
-    context_chunks = []
-
     if not results["documents"]:
         return []
 
+    context_chunks = []
     for doc, meta, dist in zip(
         results["documents"][0],
         results["metadatas"][0],
         results["distances"][0]
     ):
-        context_chunks.append(
-            {
-                "text": doc,
-                "metadata": meta,
-                "relevance": round(1 - dist, 4)
-            }
-        )
+        context_chunks.append({
+            "text": doc,
+            "metadata": meta,
+            "relevance": round(1 - dist, 4)
+        })
 
-    print(f"Retrieved {len(context_chunks)} articles.")
     return context_chunks
 
 
-def ask(query: str):
-    """RAG Query"""
-
-    print("\n" + "=" * 60)
-    print(f"QUERY: {query}")
-    print("=" * 60)
-
+def ask(query: str) -> str:
+    """RAG Query — retrieve context then generate answer."""
     context_chunks = retrieve_context(query)
 
     if not context_chunks:
-        print("No relevant articles found.")
-        return
+        return "No relevant articles found in the database."
 
-    context = "\n\n---\n\n".join(
-        [
-            f"Article (relevance: {c['relevance']}):\n{c['text']}"
-            for c in context_chunks
-        ]
-    )
+    context = "\n\n---\n\n".join([
+        f"Article (relevance: {c['relevance']}):\n{c['text']}"
+        for c in context_chunks
+    ])
 
     prompt = f"""
 You are a Senior Market Intelligence Analyst.
@@ -134,39 +121,26 @@ Structure your response as:
 Answer:
 """
 
-    print("Sending request to Groq...")
+    response = get_groq_client().chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are an expert Market Intelligence Analyst who creates concise executive reports from news and business data."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.4,
+        max_tokens=1000
+    )
 
-    response = groq_client.chat.completions.create(
-    model="llama-3.1-8b-instant",
-    messages=[
-        {
-            "role": "system",
-            "content": "You are an expert Market Intelligence Analyst who creates concise executive reports from news and business data."
-        },
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ],
-    temperature=0.4,
-    max_tokens=1000
-)
-
-    answer = response.choices[0].message.content
-
-    print("\nANSWER:")
-    print(answer)
-
-    return answer
+    return response.choices[0].message.content
 
 
 if __name__ == "__main__":
     print("\nRunning test queries...\n")
-
-    ask(
-        "What is the current sentiment around artificial intelligence companies?"
-    )
-
-    ask(
-        "What are the latest developments in startup funding?"
-    )
+    ask("What is the current sentiment around artificial intelligence companies?")
+    ask("What are the latest developments in startup funding?")

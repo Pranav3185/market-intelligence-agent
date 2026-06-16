@@ -3,36 +3,47 @@ from sqlalchemy import text
 from db.database import get_engine
 import pandas as pd
 
-# Load HuggingFace sentiment model once (downloads on first run ~250MB)
-print("Loading sentiment model...")
-sentiment_pipeline = pipeline(
-    "sentiment-analysis",
-    model="distilbert-base-uncased-finetuned-sst-2-english",
-    truncation=True,
-    max_length=512
-)
-print("Model loaded.")
+# ── Lazy global ────────────────────────────────────────────────────────────────
+_sentiment_pipeline = None
 
 
+def get_sentiment_pipeline():
+    global _sentiment_pipeline
+    if _sentiment_pipeline is None:
+        print("Loading sentiment model...")
+        _sentiment_pipeline = pipeline(
+            "sentiment-analysis",
+            model="distilbert-base-uncased-finetuned-sst-2-english",
+            truncation=True,
+            max_length=512
+        )
+        print("Sentiment model loaded.")
+    return _sentiment_pipeline
+
+
+# ── Core functions ─────────────────────────────────────────────────────────────
 def get_unprocessed_articles() -> pd.DataFrame:
     """Fetch articles that haven't been sentiment-analyzed yet."""
     engine = get_engine()
-    query = """
-        SELECT id, title, description, content
-        FROM articles
-        WHERE is_processed = FALSE
-    """
-    df = pd.read_sql(query, engine)
+
+    with engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT id, title, description, content
+            FROM articles
+            WHERE is_processed = FALSE
+        """))
+        rows = result.fetchall()
+
+    df = pd.DataFrame(rows, columns=["id", "title", "description", "content"])
     print(f"Found {len(df)} unprocessed articles.")
     return df
 
 
-def analyze_sentiment(text: str) -> dict:
+def analyze_sentiment(text_input: str) -> dict:
     """Run sentiment analysis on a piece of text."""
-    # Use title + description as input (content can be truncated by NewsAPI)
-    result = sentiment_pipeline(text[:512])[0]
-    label = result["label"]        # POSITIVE or NEGATIVE
-    score = result["score"]        # confidence 0-1
+    result = get_sentiment_pipeline()(text_input[:512])[0]
+    label = result["label"]
+    score = result["score"]
 
     # Convert to -1 to +1 scale
     normalized_score = score if label == "POSITIVE" else -score
@@ -57,7 +68,6 @@ def process_articles():
     with engine.connect() as conn:
         for _, row in df.iterrows():
             try:
-                # Combine title + description for better context
                 text_input = f"{row['title']}. {row['description'] or ''}"
                 sentiment = analyze_sentiment(text_input)
 
