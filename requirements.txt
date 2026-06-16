@@ -30,3 +30,5 @@ plotly
 # Utilities
 numpy
 tqdm
+
+torchvision
