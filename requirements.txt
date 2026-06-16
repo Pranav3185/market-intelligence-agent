@@ -1,0 +1,32 @@
+# Data ingestion & ETL
+requests
+pandas
+sqlalchemy
+psycopg2-binary
+python-dotenv
+
+# Vector store & embeddings
+chromadb
+sentence-transformers
+
+# RAG & Agents
+langchain==0.1.20
+langchain-core==0.1.53
+langchain-community==0.0.38
+langchain-groq==0.1.4
+
+# NLP / Analytics
+transformers
+torch
+scipy
+
+# Scheduling
+apscheduler
+
+# Dashboard
+streamlit
+plotly
+
+# Utilities
+numpy
+tqdm

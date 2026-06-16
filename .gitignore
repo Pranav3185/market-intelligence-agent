@@ -1,0 +1,44 @@
+# Environment
+.env
+venv/
+env/
+.venv/
+
+# Vector store — can be hundreds of MBs
+chroma_db/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Database dumps
+*.sql
+*.dump
+
+# Model cache (HuggingFace downloads)
+~/.cache/huggingface/
