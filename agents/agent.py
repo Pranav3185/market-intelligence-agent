@@ -46,6 +46,8 @@ CRITICAL RULES:
 - NEVER repeat a Question/Thought/Action block you already did
 - If a tool returns no data, try once with different input, then write Final Answer with what you have
 - Action Input must be a plain string only
+- If search_articles returns unavailable, immediately use get_sentiment_summary or get_trending_topics instead
+- Never retry a tool that returned an error
 
 Question: {input}
 {agent_scratchpad}"""

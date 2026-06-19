@@ -13,7 +13,10 @@ def search_articles(query: str) -> str:
     Search for relevant articles using semantic similarity.
     Use this when the user asks about news, events, or topics.
     """
-    return rag_ask(query)
+    try:
+        return rag_ask(query)
+    except Exception as e:
+        return f"Search unavailable: {str(e)}. Try using get_sentiment_summary or get_trending_topics instead."
 
 
 @tool
