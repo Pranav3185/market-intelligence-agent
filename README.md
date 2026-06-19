@@ -159,6 +159,7 @@ DB_PASSWORD=your_postgres_password
 Create a free project at supabase.com. Copy the connection string 
 from Settings → Database and add it to your .env file.
 Tables are created automatically when you run python main.py.
+```
 
 ### 6. Run the pipeline
 ```
