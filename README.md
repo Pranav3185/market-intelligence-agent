@@ -162,7 +162,7 @@ Tables are created automatically when you run python main.py.
 ```
 
 ### 6. Run the pipeline
-```
+
 
 ```bash
 python main.py
