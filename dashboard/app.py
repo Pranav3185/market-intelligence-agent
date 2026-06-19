@@ -214,11 +214,10 @@ st.markdown("---")
 # ── KPI row ───────────────────────────────────────────────────────────────────
 df_sent = load_sentiment_by_category()
 df_sent["category"] = df_sent["category"].str.title()
-total_articles = int(df_sent["total_articles"].sum())
-most_negative = df_sent.loc[df_sent["avg_sentiment"].idxmin(), "category"]
-most_positive = df_sent.loc[df_sent["avg_sentiment"].idxmax(), "category"]
-overall_mood = df_sent["avg_sentiment"].mean()
-
+total_articles = int(df_sent["total_articles"].sum()) if not df_sent.empty else 0
+most_negative = df_sent.loc[df_sent["avg_sentiment"].idxmin(), "category"] if not df_sent.empty else "N/A"
+most_positive = df_sent.loc[df_sent["avg_sentiment"].idxmax(), "category"] if not df_sent.empty else "N/A"
+overall_mood = df_sent["avg_sentiment"].mean() if not df_sent.empty else 0
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("📰 Total Articles", total_articles)
 col2.metric("📊 Market Sentiment Score", f"{overall_mood:.3f}")
