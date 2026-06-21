@@ -4,7 +4,7 @@
 
 📁 **GitHub:** https://github.com/Pranav3185/market-intelligence-agent
 
-> An end-to-end automated system that ingests live financial and business news, runs NLP-powered sentiment analysis, enables natural language querying via a RAG pipeline, and serves insights through an interactive AI agent dashboard - with zero manual intervention.
+> An end-to-end automated system that ingests live financial and business news, runs NLP-powered sentiment analysis, enables natural language querying via a RAG pipeline, and serves insights through an interactive AI agent dashboard with zero manual intervention.
 
 
 ## 📌 Project Overview
