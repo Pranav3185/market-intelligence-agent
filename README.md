@@ -9,7 +9,7 @@
 
 ## 📌 Project Overview
 
-This project was built to demonstrate production-style data engineering and GenAI skills. It goes beyond dashboards — the entire data pipeline runs autonomously on a schedule, data cleaning and enrichment happen in code, and users can query the system in plain English.
+This project was built to demonstrate production-style data engineering and GenAI skills. It goes beyond dashboards - the entire data pipeline runs autonomously on a schedule, data cleaning and enrichment happen in code, and users can query the system in plain English.
 
 **Key capabilities:**
 - Ingests 100+ live news articles every 6 hours across 5 market topics
